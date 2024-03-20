@@ -33,6 +33,11 @@ class _MainScreenState extends State<MainScreen> {
       );
   }
 
+  Future<void> setNotification() async{
+    await Noti().initNotifications();
+    await Noti().setDeiliNotification();
+  }
+
   Future<void> MarkedDatesUpdate() async{
       List<DateTime> _markedDates = await DatabaseHelper().getDaysWithTasks();
       _markedDatesMap = {};
@@ -41,12 +46,13 @@ class _MainScreenState extends State<MainScreen> {
           _markedDatesMap['${date.year}.${date.month}.${date.day}'] = TextStyle(color: Colors.pink);
         });
       }
+
   }
 
   @override
   void initState() {
     super.initState();
-    Noti().initNotifications();
+    setNotification();
     MarkedDatesUpdate();
   }
 

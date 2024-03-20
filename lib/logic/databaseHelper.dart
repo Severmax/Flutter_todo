@@ -6,15 +6,21 @@ import 'package:intl/intl.dart';
   class DatabaseHelper{
 
     static final DatabaseHelper _self = DatabaseHelper.internal();
-    factory DatabaseHelper() => _self;
+    factory DatabaseHelper() {
+      return _self;
+    }
     DatabaseHelper.internal(); //инициализирую статический екземп класса
 
     final String tableTasks = 'tasks';
+
     final String columnId = 'id';
+    final String columnHeading = 'heading';
     final String columnDescription = 'description';
     final String columnDate = 'date';
     final String columnTime = 'time';
     final String columnImagePath = 'imagePath';
+    final String columnColor = 'color';
+    final String columnDone = 'done';
 
     static Database? _db;
 
@@ -38,10 +44,13 @@ import 'package:intl/intl.dart';
       await db.execute('''
       CREATE TABLE $tableTasks (
         $columnId INTEGER PRIMARY KEY,
+        $columnHeading TEXT,
         $columnDescription TEXT,
         $columnDate TEXT,
         $columnTime TEXT,
-        $columnImagePath TEXT
+        $columnImagePath TEXT,
+        $columnColor TEXT,
+        $columnDone BOOL
       )
       ''');
     }
@@ -70,13 +79,13 @@ import 'package:intl/intl.dart';
       );
     }
 
-    Future<List<Map<String, dynamic>>> getTasksForDay(DateTime date) async {
+    Future<List<Map<String, dynamic>>> getTasksForDay(DateTime date, bool x) async {
       var dbClient = await db;
       String formattedDate = DateFormat('yyyy-MM-dd').format(date);
       return await dbClient!.query(
         tableTasks,
-        where: '$columnDate = ?',
-        whereArgs: [formattedDate],
+        where: '$columnDate = ? AND $columnDone = ?',
+        whereArgs: [formattedDate, x], // x - значення для стовпця done, що вказує на виконану задачу
       );
     }
 

@@ -9,7 +9,7 @@ class AddTaskPage extends StatefulWidget {
   final Task currentTask;
 
    AddTaskPage({Key? key, required this.currentTask}) : super(key: key,);
-   AddTaskPage.newEl({Key? key, required DateTime date}) : currentTask = Task("", date, TimeOfDay.now()),
+   AddTaskPage.newEl({Key? key, required DateTime date}) : currentTask = Task("","", date, TimeOfDay.now()),
         super(key: key);
 
   @override
@@ -19,6 +19,11 @@ class AddTaskPage extends StatefulWidget {
 class _AddTaskPageState extends State<AddTaskPage> {
   late Task? _currentTask;
   late TimeOfDay? _selectedTime;
+  late List<bool> _selectedColors;
+  List<Color?> _enabledColors = [
+    Colors.white, Colors.indigo, Colors.green, Colors.deepOrangeAccent,
+    Colors.amberAccent, Colors.tealAccent,
+  ];
 
 
   @override
@@ -26,6 +31,16 @@ class _AddTaskPageState extends State<AddTaskPage> {
     super.initState();
     _currentTask = widget.currentTask;
     _selectedTime = _currentTask!.time!;
+    _selectedColors = List.filled(6, false);
+
+    for (int i = 0; i<_enabledColors.length; i++){
+      if (_currentTask!.colorD.containsKey(_currentTask!.color)){
+        if (_enabledColors[i] == _currentTask!.colorD[_currentTask!.color]){
+          _selectedColors[i] = true;
+          break;
+        }
+      }
+    }
   }
 
   File? _imageFile;
@@ -85,30 +100,55 @@ class _AddTaskPageState extends State<AddTaskPage> {
               icon: Icon(Icons.check))
         ],
       ),
-      body: Column(
+      body: SingleChildScrollView(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container(//текст задачі..............................................
-              margin: EdgeInsets.all(20),
+            Container(//Заголовок..............................................
+              margin: EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: TextFormField(
                 style: TextStyle(color: Colors.white),
-                controller: TextEditingController(text: this._currentTask!.description),
-                onChanged: (String value) =>this._currentTask!.description = value,
+                controller: TextEditingController(text: this._currentTask!.heading),
+                onChanged: (String value) =>this._currentTask!.heading = value,
                 decoration:
-                  InputDecoration(
-                  hintText: 'Введіть вашу задачу...',
+                InputDecoration(
+                  hintText: 'Заголовок',
                   hintStyle: TextStyle(color: Colors.white24),
                   fillColor: Colors.black38,
                   filled: true,
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blueAccent, width: 2.0),
                     borderRadius: BorderRadius.circular(10.0),
-                    ),
-                   focusedBorder: OutlineInputBorder(
-                     borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0),
-                     borderRadius: BorderRadius.circular(10.0),
-                   ),
                   ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                minLines: 1,
+              ),
+            ),
+            Container(//текст задачі(Опис)..............................................
+              margin: EdgeInsets.fromLTRB(20, 10, 20, 20),
+              child: TextFormField(
+                style: TextStyle(color: Colors.white),
+                controller: TextEditingController(text: this._currentTask!.description),
+                onChanged: (String value) =>this._currentTask!.description = value,
+                decoration:
+                InputDecoration(
+                  hintText: 'Опишіть вашу задачу...',
+                  hintStyle: TextStyle(color: Colors.white24),
+                  fillColor: Colors.black38,
+                  filled: true,
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent, width: 2.0),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 2.0),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
                 minLines: 3,
                 maxLines: 4,
               ),
@@ -158,7 +198,47 @@ class _AddTaskPageState extends State<AddTaskPage> {
                   ),
                 ]
             ),
+            SizedBox(height: 20,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(
+                  "Колір:",
+                  style: TextStyle(fontSize: 30.0, color: Colors.white),
+                ),
+                ToggleButtons(
+                  children: [
+                    Icon(Icons.square, color: _enabledColors[0], size: 30,),
+                    Icon(Icons.square, color: _enabledColors[1], size: 30,),
+                    Icon(Icons.square, color: _enabledColors[2], size: 30,),
+                    Icon(Icons.square, color: _enabledColors[3], size: 30,),
+                    Icon(Icons.square, color: _enabledColors[4], size: 30,),
+                    Icon(Icons.square, color: _enabledColors[5], size: 30,),
+                  ],
+                  isSelected:  _selectedColors, // Початковий стан вибраних кнопок
+                  onPressed: (index) {
+                    setState(() {
+                      for (var i = 0; i < _selectedColors.length; i++) {
+                        _selectedColors[i] = false;
+                      }
+                      _selectedColors[index] = !_selectedColors[index];
+                      _currentTask!.color = _currentTask!.getKeyByValue(_enabledColors[index])!;
+                      print(_currentTask!.color);
+                    });
+                  },
+                  color: Colors.white, // Колір обводки кнопок
+                  selectedColor: Colors.white, // Колір тексту на вибраних кнопках
+                  fillColor: Colors.grey, // Колір фону кнопок
+                  borderWidth: 2, // Товщина обводки кнопок
+                  selectedBorderColor: Colors.white, // Колір обводки вибраних кнопок
+                  renderBorder: true, // Показувати обводку кнопок
+                  constraints: BoxConstraints.tightFor(width: 30, height: 30),
+                ),
+              ],
+            ),
+
           ],
+        ),
       ),
     );
   }

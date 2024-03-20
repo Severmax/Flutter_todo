@@ -30,7 +30,7 @@ import 'package:permission_handler/permission_handler.dart';
     }
 
     // инициализация настроек уведомлений и канала уведомлений
-    void initNotifications() async {
+    Future<void> initNotifications() async {
       const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('mipmap/ic_launcher');
 
@@ -51,7 +51,7 @@ import 'package:permission_handler/permission_handler.dart';
       var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'flutter_todo_noti',
         'flutter_todo',
-        channelDescription: 'Дозволяє отримувати повідомлення про завдання за 15хв до запланованого часу.',
+        channelDescription: 'Дозволяє отримувати повідомлення про завдання за 30хв до запланованого часу.',
 
         playSound: true,
         // sound: RawResourceAndroidNotificationSound('notification'),
@@ -67,21 +67,21 @@ import 'package:permission_handler/permission_handler.dart';
       tz.initializeTimeZones();
       tz.setLocalLocation(tz.getLocation('Europe/Helsinki'));
 
-      requestNotificationPermission();
-
-      setDeiliNotification();
-    }
+      requestNotificationPermission();    }
 
     // cоздание ежедневного уведомления в 10 утра
-    void setDeiliNotification() async{
+    Future<void> setDeiliNotification() async{
       var now = tz.TZDateTime.now(tz.local);
-      var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 10);
+      print(now);
+      var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, 8);
+      print(scheduledDate);
 
-      for(int i = 0; i<7; i++){
-        var data = await DatabaseHelper().getTasksForDay(scheduledDate);
+      for(int i = 10000; i<10007; i++){
+        var data = await DatabaseHelper().getTasksForDay(scheduledDate, false);
+        print("$i - ітерація(DailiNoti)");
         flutterLocalNotificationsPlugin.zonedSchedule(
-          0,
-          'Добрий ранок',
+          i,
+          'Добрий ранок!',
           'Кількість завдань на сьогодні: ${data.length}',
           scheduledDate,
           _platformChannelSpecifics,
@@ -95,7 +95,7 @@ import 'package:permission_handler/permission_handler.dart';
 
     }
 
-    // отправка уведомления за 15 минут до указанного времени
+    // отправка уведомления за 30 минут до указанного времени
     void setNotification(Task task) async {
 
 
@@ -105,7 +105,7 @@ import 'package:permission_handler/permission_handler.dart';
         task.date!.day,
         task.time!.hour,
         task.time!.minute,
-      ).subtract(Duration(minutes: 15));
+      ).subtract(Duration(minutes: 30));
 
 
       tz.TZDateTime plannedTZDateTime = tz.TZDateTime.from(plannedDateTime, tz.local);
@@ -118,7 +118,7 @@ import 'package:permission_handler/permission_handler.dart';
       await flutterLocalNotificationsPlugin.zonedSchedule(
         task.id!,
         'Нагадування про завдання',
-        'Подія: ${task.description} почнеться через 15 хвилин.',
+        'Завдання "${task.heading}" закінчеться через 30 хвилин.',
         plannedTZDateTime,
         _platformChannelSpecifics,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
